@@ -18,12 +18,16 @@ def gen():
     """Video streaming generator function."""
     while True:
         # capture frame-by-frame
-        ret, frame = cam.read()
-        cv2.imwrite('pic.jpg', frame)
+        success, frame = cam.read()
+        if not success:
+            break
+        else:
+            ret, buffer = cv2.imencode(".jpg", frame)
+            frame = buffer.tobytes()
 
-        # yield the output frame in the byte format
+        # concatenating frame one by one and show result
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + open('pic.jpg', 'rb').read() + b'\r\n')
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 @app.route("/video")
 def video():
